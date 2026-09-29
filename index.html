@@ -1521,46 +1521,9 @@ img, video, canvas, iframe {
       document.getElementById("contact").scrollIntoView({ behavior: "smooth" });
     }
     window.scrollToContact = scrollToContact;
-
-    // 3D tilt effect
-    const tiltElements = document.querySelectorAll(".tilt-3d");
-    tiltElements.forEach((el) => {
-      el.addEventListener("mousemove", (e) => {
-        const rect = el.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const midX = rect.width / 2;
-        const midY = rect.height / 2;
-        const rotateX = ((y - midY) / midY) * -8;
-        const rotateY = ((x - midX) / midX) * 8;
-        el.style.setProperty("--rx", rotateX + "deg");
-        el.style.setProperty("--ry", rotateY + "deg");
-        el.style.setProperty("--tz", "18px");
-        el.classList.add("hovered");
-      });
-      el.addEventListener("mouseleave", () => {
-        el.style.setProperty("--rx", "0deg");
-        el.style.setProperty("--ry", "0deg");
-        el.style.setProperty("--tz", "0px");
-        el.classList.remove("hovered");
-      });
-    });
-
-    // parallax 3D blobs
-    const parallaxShapes = document.querySelectorAll(".parallax-3d");
-    window.addEventListener("mousemove", (e) => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const x = (e.clientX - w / 2) / w;
-      const y = (e.clientY - h / 2) / h;
-      parallaxShapes.forEach((shape, index) => {
-        const depth = (index + 1) * 8;
-        const translateX = -x * depth;
-        const translateY = -y * depth;
-        shape.style.transform = "translate3d(" + translateX + "px," + translateY + "px,0)";
-      });
-    });
-    // footer year
+    // Mouse movement effects disabled so the page stays fixed while moving the pointer.
+    // Parallax mouse movement disabled.
+// footer year
     document.getElementById("year").textContent = new Date().getFullYear();
     // Gallery + lightbox logic
 (function(){
@@ -1934,22 +1897,31 @@ img, video, canvas, iframe {
 (function () {
   const sections = Array.from(document.querySelectorAll("main > section"));
   const header = document.getElementById("siteHeader");
+
   if (!sections.length) return;
 
   let currentIndex = 0;
   let locked = false;
-  let unlockTimer = null;
+  let animationFrame = null;
+
+  function sectionTop(section) {
+    return Math.max(
+      0,
+      section.getBoundingClientRect().top + window.scrollY
+    );
+  }
 
   function getClosestSection() {
     const scrollY = window.scrollY;
     let closest = 0;
     let smallestDistance = Infinity;
 
-    sections.forEach((section, i) => {
-      const distance = Math.abs(section.offsetTop - scrollY);
+    sections.forEach((section, index) => {
+      const distance = Math.abs(sectionTop(section) - scrollY);
+
       if (distance < smallestDistance) {
         smallestDistance = distance;
-        closest = i;
+        closest = index;
       }
     });
 
@@ -1967,84 +1939,115 @@ img, video, canvas, iframe {
   }
 
   function goTo(index) {
-    const target = Math.max(0, Math.min(index, sections.length - 1));
-    if (target === currentIndex || locked) return;
+    const targetIndex = Math.max(
+      0,
+      Math.min(index, sections.length - 1)
+    );
 
-    currentIndex = target;
-    updateNavbar(target);
+    // At the first/last section, do nothing.
+    if (targetIndex === currentIndex || locked) return;
+
     locked = true;
+    currentIndex = targetIndex;
+    updateNavbar(targetIndex);
 
-    sections[target].scrollIntoView({
-      behavior: "smooth",
-      block: "start"
+    const targetTop = sectionTop(sections[targetIndex]);
+
+    window.scrollTo({
+      top: targetTop,
+      behavior: "smooth"
     });
 
-    // Keep the wheel locked until the target section is actually reached.
-    // This prevents trackpad/wheel inertia from requiring an extra scroll or
-    // accidentally skipping a section.
-    clearTimeout(unlockTimer);
-    const targetTop = sections[target].offsetTop;
+    // Unlock when the browser has actually reached the target.
     const startTime = performance.now();
 
-    function waitForScrollToFinish(now) {
+    function checkPosition(now) {
       const distance = Math.abs(window.scrollY - targetTop);
-      const timedOut = now - startTime > 2200;
+      const finished = distance <= 3;
+      const timeout = now - startTime >= 1600;
 
-      if (distance <= 4 || timedOut) {
+      if (finished || timeout) {
+        cancelAnimationFrame(animationFrame);
         locked = false;
-        setActive(getClosestSection());
+        setActive(targetIndex);
         return;
       }
 
-      unlockTimer = requestAnimationFrame(waitForScrollToFinish);
+      animationFrame = requestAnimationFrame(checkPosition);
     }
 
-    unlockTimer = requestAnimationFrame(waitForScrollToFinish);
+    animationFrame = requestAnimationFrame(checkPosition);
   }
 
-  // Start from the section currently visible on page load.
+  // Find the correct section when the page first loads.
   setActive(getClosestSection());
 
-  window.addEventListener("wheel", function (e) {
+  // One wheel movement = one section.
+  window.addEventListener("wheel", function (event) {
+    // Keep normal scrolling on small/mobile screens.
     if (window.innerWidth <= 640) return;
-    if (Math.abs(e.deltaY) < 8) return;
 
-    // Always consume the wheel event so browser native scrolling cannot
-    // move half a section before our one-section navigation starts.
-    e.preventDefault();
+    // Ignore tiny trackpad noise.
+    if (Math.abs(event.deltaY) < 8) return;
+
+    event.preventDefault();
+
     if (locked) return;
 
-    const direction = e.deltaY > 0 ? 1 : -1;
-    goTo(currentIndex + direction);
+    if (event.deltaY > 0) {
+      // Scroll DOWN
+      goTo(currentIndex + 1);
+    } else {
+      // Scroll UP
+      goTo(currentIndex - 1);
+    }
   }, { passive: false });
 
-  // Keyboard navigation: one key press = one section.
-  window.addEventListener("keydown", function (e) {
-    if (window.innerWidth <= 640 || locked) return;
+  // Keyboard navigation.
+  window.addEventListener("keydown", function (event) {
+    if (window.innerWidth <= 640) return;
+    if (locked) return;
 
-    if (["ArrowDown", "PageDown"].includes(e.key)) {
-      e.preventDefault();
+    if (event.key === "ArrowDown" || event.key === "PageDown") {
+      event.preventDefault();
       goTo(currentIndex + 1);
-    } else if (["ArrowUp", "PageUp"].includes(e.key)) {
-      e.preventDefault();
+    }
+
+    if (event.key === "ArrowUp" || event.key === "PageUp") {
+      event.preventDefault();
       goTo(currentIndex - 1);
+    }
+
+    if (event.key === "Home") {
+      event.preventDefault();
+      goTo(0);
+    }
+
+    if (event.key === "End") {
+      event.preventDefault();
+      goTo(sections.length - 1);
     }
   });
 
-  // Keep navbar position correct if the user reaches a section by dragging
-  // the scrollbar, touchpad, or another navigation method.
+  // Keep the active section correct for links, buttons, scrollbar, etc.
   window.addEventListener("scroll", function () {
-    if (!locked) setActive(getClosestSection());
+    if (!locked) {
+      setActive(getClosestSection());
+    }
   }, { passive: true });
 
-  // Reveal animation when a section becomes visible.
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) entry.target.classList.add("is-visible");
+  // Section entrance animations.
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("is-visible");
+      }
     });
   }, { threshold: 0.45 });
 
-  sections.forEach((section) => observer.observe(section));
+  sections.forEach(function (section) {
+    observer.observe(section);
+  });
 })();
 </script>
 
