@@ -1098,6 +1098,123 @@ img, video, canvas, iframe {
         max-width: calc(100% - 20px);
       }
     }
+
+    /* Contact form additions */
+    .contact-form{
+      border-radius:18px;
+      padding:1.6rem;
+      border:1px solid rgba(55,65,81,.8);
+      background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(17,24,39,.96));
+      box-shadow:0 24px 60px rgba(0,0,0,.7);
+    }
+    .contact-form h2{font-size:1.05rem;margin-bottom:.4rem;}
+    .form-description{color:var(--muted);font-size:.86rem;line-height:1.6;margin-bottom:1rem;}
+    .form-group{display:grid;gap:.45rem;}
+    .rating{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+    .rating-option{
+      display:flex;
+      align-items:center;
+      gap:.25rem;
+      cursor:pointer;
+      text-transform:none;
+      letter-spacing:normal;
+    }
+    .rating-option input{width:auto;}
+    .rating-option span{color:var(--accent);font-size:1.2rem;}
+    .rating-option small{color:var(--muted);font-size:.7rem;}
+    #submitButton{
+      border:1px solid rgba(94,231,255,.55);
+      border-radius:999px;
+      padding:.75rem 1.4rem;
+      background:rgba(94,231,255,.09);
+      color:var(--text);
+      cursor:pointer;
+      font-size:.9rem;
+      transition:.25s ease;
+    }
+    #submitButton:hover{
+      background:rgba(94,231,255,.18);
+      transform:translateY(-2px);
+    }
+    #formMessage{font-size:.82rem;color:var(--muted);}
+
+
+    /* ===== FINAL NAVBAR: ALWAYS TOP + STRONGER GLASS EFFECT ===== */
+    header#siteHeader,
+    header#siteHeader.nav-bottom {
+      position: fixed !important;
+      top: 18px !important;
+      bottom: auto !important;
+      left: 50% !important;
+      transform: translate3d(-50%, 0, 0) !important;
+      z-index: 99999 !important;
+
+      background: rgba(8, 15, 28, 0.48) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.38),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
+
+      backdrop-filter: blur(28px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+
+      transition:
+        background .3s ease,
+        border-color .3s ease,
+        box-shadow .3s ease,
+        transform .3s ease !important;
+    }
+
+    /* More glass when the mouse is over the navbar */
+    header#siteHeader:hover {
+      background: rgba(20, 30, 48, 0.68) !important;
+      border-color: rgba(255, 255, 255, 0.32) !important;
+      box-shadow:
+        0 14px 45px rgba(0, 0, 0, 0.48),
+        0 0 28px rgba(94, 231, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08) !important;
+      backdrop-filter: blur(34px) saturate(210%) !important;
+      -webkit-backdrop-filter: blur(34px) saturate(210%) !important;
+    }
+
+    header#siteHeader nav a {
+      transition:
+        color .25s ease,
+        background .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease !important;
+      border-radius: 10px;
+      padding: 7px 10px !important;
+    }
+
+    header#siteHeader nav a:hover,
+    header#siteHeader nav a:focus-visible {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.10) !important;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 4px 18px rgba(94, 231, 255, 0.10) !important;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 900px) {
+      header#siteHeader,
+      header#siteHeader.nav-bottom {
+        top: 12px !important;
+        bottom: auto !important;
+        max-width: calc(100% - 20px);
+      }
+
+      header#siteHeader nav ul {
+        background: rgba(8, 15, 28, 0.72) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(26px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(26px) saturate(180%) !important;
+      }
+    }
+
 </style>
 </head>
 <body>
@@ -1490,13 +1607,103 @@ img, video, canvas, iframe {
             <span><strong>Location:</strong> India</span>
             <span><strong>Focus:</strong> Web development & problem solving</span>
           </div>
+        </div>
 
+        <div class="contact-form">
+          <h2>Contact Me</h2>
+          <p class="form-description">
+            Have any requirements or questions? Send them to me below.
+          </p>
+
+          <form id="contactForm">
+
+            <!-- Email -->
+            <div class="form-group">
+              <label>Email *</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                required
+              >
+            </div>
+
+            <!-- Name -->
+            <div class="form-group">
+              <label>Name *</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your name"
+                required
+              >
+            </div>
+
+            <!-- Requirements -->
+            <div class="form-group">
+              <label>Requirements *</label>
+              <textarea
+                name="requirements"
+                placeholder="Tell me your requirements..."
+                required
+              ></textarea>
+            </div>
+
+            <!-- Satisfaction -->
+            <div class="form-group">
+              <input
+                type="hidden"
+                name="satisfaction"
+                id="satisfaction"
+              >
+
+              <div class="rating">
+                <label class="rating-option">
+                  <input type="radio" name="satisfaction" value="1" required>
+                  <span>★</span>
+                  <small>1</small>
+                </label>
+
+                <label class="rating-option">
+                  <input type="radio" name="satisfaction" value="2">
+                  <span>★</span>
+                  <small>2</small>
+                </label>
+
+                <label class="rating-option">
+                  <input type="radio" name="satisfaction" value="3">
+                  <span>★</span>
+                  <small>3</small>
+                </label>
+
+                <label class="rating-option">
+                  <input type="radio" name="satisfaction" value="4">
+                  <span>★</span>
+                  <small>4</small>
+                </label>
+
+                <label class="rating-option">
+                  <input type="radio" name="satisfaction" value="5">
+                  <span>★</span>
+                  <small>5</small>
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" id="submitButton">
+              Submit
+            </button>
+
+            <!-- Message -->
+            <p id="formMessage"></p>
+          </form>
+        </div>
+      </div>
     </section>
-  </main>
-          <p style="text-align:center;margin-bottom:25px;">🤝 Open to Opportunities &amp; Collaboration</p>
 
-    <h3 style="text-align:center;margin-bottom:20px;">Send Me a Message</h3>
-    <iframe src="form.html" title="Contact Form" frameborder="0" style="width:100%;min-height:500px;border-radius:12px;"></iframe>
+  </main>
+<script src="https://form-olive-beta.vercel.app/script.js"></script>
 <script>
     // loader
    window.addEventListener("load", () => {
